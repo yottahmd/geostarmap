@@ -106,7 +106,7 @@ export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
               />
               <p className="mt-2 text-xs text-gray-400">
                 Adding a token increases rate limits from 60 to 5,000 requests
-                per hour. Your token is not stored.
+                per hour and is required to fetch user location data. Your token is not stored.
               </p>
             </div>
           )}

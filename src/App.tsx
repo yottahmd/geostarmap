@@ -88,10 +88,10 @@ function App() {
 
         if (uniqueLocations.length === 0) {
           setProgress({
-            status: 'complete',
+            status: 'error',
             current: 0,
             total: 0,
-            message: 'No users with location data found.',
+            message: 'No users with location data found. Please add a GitHub API token to fetch location data.',
           });
           setIsProcessing(false);
           return;

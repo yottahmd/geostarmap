@@ -86,11 +86,33 @@ export class GitHubService {
           throw await this.handleErrorResponse(response);
         }
 
-        const data: GitHubUser[] = await response.json();
-        users.push(...data);
+        const stargazerData = await response.json();
+        
+        // If we have a token, fetch full user data to get locations
+        if (this.token) {
+          const detailedUsers = await Promise.all(
+            stargazerData.slice(0, 30).map(async (user: any) => {
+              try {
+                const userResponse = await fetch(user.url, {
+                  headers: this.getHeaders(),
+                });
+                if (userResponse.ok) {
+                  return userResponse.json();
+                }
+              } catch {
+                // Ignore individual user fetch errors
+              }
+              return user;
+            })
+          );
+          users.push(...detailedUsers);
+        } else {
+          // Without token, we won't have location data
+          users.push(...stargazerData);
+        }
 
         if (onProgress) {
-          onProgress(users.length, totalCount);
+          onProgress(users.length, Math.min(totalCount, this.token ? totalCount : 60));
         }
 
         // Check if there are more pages
@@ -100,6 +122,11 @@ export class GitHubService {
         }
 
         page++;
+        
+        // Limit total users to avoid excessive API calls
+        if (users.length >= 300) {
+          break;
+        }
       }
 
       return users;
