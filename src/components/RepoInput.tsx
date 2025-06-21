@@ -61,8 +61,8 @@ export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
             required
           />
           {error && (
-            <div className="mt-1 flex items-center gap-1 text-sm text-red-600">
-              <AlertCircle className="h-4 w-4" />
+            <div className="mt-1 flex items-center gap-1 text-xs sm:text-sm text-red-600">
+              <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}
@@ -72,7 +72,9 @@ export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+            className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+            aria-expanded={showAdvanced}
+            aria-controls="advanced-options"
           >
             {showAdvanced ? (
               <ChevronUp className="h-4 w-4" />
@@ -83,7 +85,10 @@ export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
           </button>
 
           {showAdvanced && (
-            <div className="mt-3 p-4 bg-gray-50 rounded-md">
+            <div
+              id="advanced-options"
+              className="mt-3 p-4 bg-gray-50 rounded-md"
+            >
               <label
                 htmlFor="api-token"
                 className="block text-sm font-medium text-gray-700 mb-1"

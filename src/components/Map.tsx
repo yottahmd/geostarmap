@@ -63,7 +63,7 @@ export function MapView({ users, locations }: MapProps) {
     );
 
   return (
-    <div className="w-full h-[600px] rounded-lg overflow-hidden shadow-sm border">
+    <div className="w-full h-[400px] sm:h-[500px] md:h-[600px] rounded-lg overflow-hidden shadow-sm border">
       <MapContainer
         center={[20, 0]}
         zoom={2}
