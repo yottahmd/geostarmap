@@ -22,11 +22,13 @@ export function ProgressBar({ progress, onCancel }: ProgressBarProps) {
         <p className="text-sm font-medium text-gray-300">{progress.message}</p>
         {onCancel &&
           progress.status !== 'complete' &&
-          progress.status !== 'error' && (
+          progress.status !== 'error' &&
+          progress.status !== 'idle' && (
             <button
               onClick={onCancel}
-              className="text-gray-400 hover:text-gray-300"
-              aria-label="Cancel"
+              className="text-gray-400 hover:text-gray-200 transition-colors p-1 rounded hover:bg-gray-700"
+              aria-label="Cancel operation"
+              title="Cancel"
             >
               <X className="h-4 w-4" />
             </button>

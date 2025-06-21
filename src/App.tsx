@@ -21,13 +21,23 @@ function App() {
     message: '',
   });
   const [isProcessing, setIsProcessing] = useState(false);
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
 
   const githubService = useMemo(() => new GitHubService(), []);
   const geocodingService = useMemo(() => new GeocodingService(), []);
   const cacheService = useMemo(() => new CacheService(), []);
 
   const handleCancel = useCallback(() => {
+    // Abort any ongoing fetch requests
+    if (abortController) {
+      abortController.abort();
+      setAbortController(null);
+    }
+    
+    // Clear geocoding queue
     geocodingService.clearQueue();
+    
+    // Reset state
     setIsProcessing(false);
     setProgress({
       status: 'idle',
@@ -35,10 +45,14 @@ function App() {
       total: 0,
       message: '',
     });
-  }, [geocodingService]);
+  }, [geocodingService, abortController]);
 
   const processRepository = useCallback(
     async (url: string, token?: string) => {
+      // Create new AbortController for this operation
+      const controller = new AbortController();
+      setAbortController(controller);
+      
       try {
         setIsProcessing(true);
         setUsers([]);
@@ -73,6 +87,7 @@ function App() {
               message: `Fetching stargazers... (${fetched}/${total})`,
             });
           },
+          controller.signal,
         );
 
         setUsers(stargazers);
@@ -108,6 +123,11 @@ function App() {
         const locationMap = new Map<string, GeocodedLocation | null>();
 
         for (let i = 0; i < uniqueLocations.length; i++) {
+          // Check if cancelled
+          if (controller.signal.aborted) {
+            throw new Error('Operation cancelled');
+          }
+          
           const location = uniqueLocations[i];
 
           // Check cache first
@@ -142,6 +162,13 @@ function App() {
         });
       } catch (error) {
         console.error('Processing error:', error);
+        
+        // Check if it was cancelled
+        if (error instanceof Error && error.message === 'Operation cancelled') {
+          // Already handled in handleCancel
+          return;
+        }
+        
         setProgress({
           status: 'error',
           current: 0,
@@ -150,6 +177,7 @@ function App() {
         });
       } finally {
         setIsProcessing(false);
+        setAbortController(null);
       }
     },
     [githubService, geocodingService, cacheService],

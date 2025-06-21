@@ -50,6 +50,7 @@ export class GitHubService {
   async fetchStargazers(
     repo: Repository,
     onProgress?: (fetched: number, total: number) => void,
+    signal?: AbortSignal,
   ): Promise<GitHubUser[]> {
     const users: GitHubUser[] = [];
     let page = 1;
@@ -60,7 +61,7 @@ export class GitHubService {
       // First, get the total count
       const repoResponse = await fetch(
         `${GITHUB_API_BASE}/repos/${repo.owner}/${repo.name}`,
-        { headers: this.getHeaders() },
+        { headers: this.getHeaders(), signal },
       );
 
       if (!repoResponse.ok) {
@@ -72,6 +73,11 @@ export class GitHubService {
 
       // Fetch stargazers with pagination
       while (true) {
+        // Check if aborted
+        if (signal?.aborted) {
+          throw new Error('Operation cancelled');
+        }
+        
         const url = new URL(
           `${GITHUB_API_BASE}/repos/${repo.owner}/${repo.name}/stargazers`,
         );
@@ -80,6 +86,7 @@ export class GitHubService {
 
         const response = await fetch(url.toString(), {
           headers: this.getHeaders(),
+          signal,
         });
 
         if (!response.ok) {
@@ -95,6 +102,7 @@ export class GitHubService {
               try {
                 const userResponse = await fetch(user.url, {
                   headers: this.getHeaders(),
+                  signal,
                 });
                 if (userResponse.ok) {
                   return userResponse.json();
