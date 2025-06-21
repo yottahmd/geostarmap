@@ -147,9 +147,8 @@ export class GitHubService {
         totalCount = repository.stargazerCount;
         const stargazers = repository.stargazers;
 
-        // Only add users with locations
-        const usersWithLocations = stargazers.nodes
-          .filter((user: GraphQLStargazerNode) => user.location)
+        // Map all users, not just those with locations
+        const mappedUsers = stargazers.nodes
           .map((user: GraphQLStargazerNode) => ({
             id: user.id,
             login: user.login,
@@ -158,10 +157,12 @@ export class GitHubService {
             location: user.location || undefined,
           }));
 
-        users.push(...usersWithLocations);
+        users.push(...mappedUsers);
 
+        // For progress, count processed users, not just those with locations
         if (onProgress) {
-          onProgress(users.length, Math.min(totalCount, 5000));
+          const processedCount = Math.min(users.length, 5000);
+          onProgress(processedCount, Math.min(totalCount, 5000));
         }
 
         hasNextPage = stargazers.pageInfo.hasNextPage;
