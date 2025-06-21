@@ -3,7 +3,6 @@ import { Header } from './components/Header';
 import { RepoInput } from './components/RepoInput';
 import { ProgressBar } from './components/ProgressBar';
 import { MapView } from './components/Map';
-import { MapSkeleton } from './components/MapSkeleton';
 import { Statistics } from './components/Statistics';
 import { GitHubService } from './services/github';
 import { GeocodingService } from './services/geocoding';
@@ -171,12 +170,7 @@ function App() {
           {showMap && (
             <div className="mt-8">
               <Statistics users={users} locations={locations} />
-
-              {progress.status === 'geocoding' ? (
-                <MapSkeleton />
-              ) : (
-                <MapView users={users} locations={locations} />
-              )}
+              <MapView users={users} locations={locations} />
 
               {/* Show users without valid locations */}
               {(() => {
