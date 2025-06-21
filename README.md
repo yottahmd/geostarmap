@@ -2,6 +2,8 @@
 
 A web application that visualizes the geographic distribution of GitHub repository stargazers on an interactive world map.
 
+🌐 **Live Demo:** [https://geostarmap.pages.dev](https://geostarmap.pages.dev)
+
 ## Features
 
 - Input any public GitHub repository URL
