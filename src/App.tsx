@@ -6,7 +6,7 @@ import { Map } from './components/Map';
 import { GitHubService } from './services/github';
 import { GeocodingService } from './services/geocoding';
 import { CacheService } from './services/cache';
-import { GitHubUser, GeocodedLocation, ProcessingProgress } from './types';
+import type { GitHubUser, GeocodedLocation, ProcessingProgress } from './types';
 
 function App() {
   const [users, setUsers] = useState<GitHubUser[]>([]);

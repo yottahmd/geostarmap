@@ -1,6 +1,5 @@
-import React from 'react';
 import { X } from 'lucide-react';
-import { ProcessingProgress } from '../types';
+import type { ProcessingProgress } from '../types';
 
 interface ProgressBarProps {
   progress: ProcessingProgress;

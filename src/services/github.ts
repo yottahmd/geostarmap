@@ -1,4 +1,4 @@
-import { GitHubUser, Repository, AppError } from '../types';
+import type { GitHubUser, Repository, AppError } from '../types';
 
 const GITHUB_API_BASE = 'https://api.github.com';
 

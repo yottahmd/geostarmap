@@ -1,4 +1,4 @@
-import { GeocodedLocation } from '../types';
+import type { GeocodedLocation } from '../types';
 
 const CACHE_PREFIX = 'geostarmap_cache_';
 const CACHE_EXPIRY_DAYS = 30;

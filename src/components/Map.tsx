@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { GitHubUser, GeocodedLocation } from '../types';
+import type { GitHubUser, GeocodedLocation } from '../types';
 
 // Fix Leaflet default marker icon issue
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

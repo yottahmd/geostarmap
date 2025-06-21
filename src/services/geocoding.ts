@@ -1,4 +1,4 @@
-import { GeocodedLocation } from '../types';
+import type { GeocodedLocation } from '../types';
 import { RateLimiter } from '../utils/rateLimit';
 
 const NOMINATIM_API_BASE = 'https://nominatim.openstreetmap.org';
