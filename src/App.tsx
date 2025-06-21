@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { Header } from './components/Header';
 import { RepoInput } from './components/RepoInput';
 import { ProgressBar } from './components/ProgressBar';
-import { Map } from './components/Map';
+import { MapView } from './components/Map';
 import { GitHubService } from './services/github';
 import { GeocodingService } from './services/geocoding';
 import { CacheService } from './services/cache';
@@ -168,7 +168,7 @@ function App() {
 
           {showMap && (
             <div className="mt-8">
-              <Map users={users} locations={locations} />
+              <MapView users={users} locations={locations} />
 
               {/* Show users without valid locations */}
               {(() => {

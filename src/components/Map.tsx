@@ -45,7 +45,7 @@ function MapBounds({
   return null;
 }
 
-export function Map({ users, locations }: MapProps) {
+export function MapView({ users, locations }: MapProps) {
   const markers = users
     .map((user) => {
       if (!user.location) return null;
