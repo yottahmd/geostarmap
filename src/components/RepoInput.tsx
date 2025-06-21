@@ -11,7 +11,7 @@ interface RepoInputProps {
 export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
   const [url, setUrl] = useState('');
   const [token, setToken] = useState('');
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(true);
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -23,8 +23,13 @@ export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
       return;
     }
 
+    if (!token) {
+      setError('GitHub API token is required');
+      return;
+    }
+
     setError('');
-    onSubmit(url, token || undefined);
+    onSubmit(url, token);
   };
 
   const handleUrlChange = (value: string) => {
@@ -81,7 +86,7 @@ export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
             ) : (
               <ChevronDown className="h-4 w-4" />
             )}
-            Advanced Options
+            API Token
           </button>
 
           {showAdvanced && (
@@ -93,7 +98,7 @@ export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
                 htmlFor="api-token"
                 className="block text-sm font-medium text-gray-300 mb-1"
               >
-                GitHub API Token (Optional)
+                GitHub API Token (Required)
               </label>
               <input
                 id="api-token"
@@ -105,9 +110,9 @@ export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
                 disabled={disabled}
               />
               <p className="mt-2 text-xs text-gray-400">
-                Adding a token increases rate limits from 60 to 5,000 requests
-                per hour and is required to fetch user location data. Your token
-                is not stored.
+                A token is required to fetch user location data and enables
+                processing up to 5,000 stargazers. Your token is not stored.
+                Create a token at github.com/settings/tokens (no special permissions needed).
               </p>
             </div>
           )}
@@ -115,10 +120,10 @@ export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
 
         <button
           type="submit"
-          disabled={disabled || !url}
+          disabled={disabled || !url || !token}
           className={cn(
             'w-full py-2 px-4 rounded-md font-medium transition-colors',
-            disabled || !url
+            disabled || !url || !token
               ? 'bg-gray-800 text-gray-400 cursor-not-allowed'
               : 'bg-blue-500 text-white hover:bg-blue-600',
           )}

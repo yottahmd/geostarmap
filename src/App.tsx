@@ -108,7 +108,7 @@ function App() {
             current: 0,
             total: 0,
             message:
-              'No users with location data found. Please add a GitHub API token to fetch location data.',
+              'No users with location data found. This repository\'s stargazers may not have public location data.',
           });
           setIsProcessing(false);
           return;

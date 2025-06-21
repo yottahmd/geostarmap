@@ -8,7 +8,7 @@ A web application that visualizes the geographic distribution of GitHub reposito
 
 - Input any public GitHub repository URL
 - View stargazer locations on an interactive map
-- Optional GitHub API token support for higher rate limits
+- Requires GitHub API token to fetch user location data
 - Progress tracking while processing users
 - Cached geocoding results for performance
 - Fully responsive design
