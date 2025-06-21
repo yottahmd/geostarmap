@@ -231,3 +231,23 @@ src/
 - Contributor location analysis
 - Repository comparison mode
 - Backend API for caching/analytics
+
+## Git Commit Guidelines
+
+- **NEVER EVER use `git add -A` or `git add .`** - ALWAYS stage specific files only
+- **CRITICAL: Using `git add -A` is FORBIDDEN. Always use `git add <specific-file>`**
+- Follow conventional commit format (fix:, feat:, docs:, etc.)
+- Keep commit messages to one line unless body is absolutely necessary
+- For commits fixing bugs or adding features based on user reports add:
+  ```
+  git commit --trailer "Reported-by:<name>"
+  ```
+  Where `<name>` is the name of the user
+- For commits related to a Github issue, add:
+  ```
+  git commit --trailer "Github-Issue:#<number>"
+  ```
+- **NEVER mention co-authored-by or similar**
+- **NEVER mention the tool used to create the commit message**
+- **NEVER ever include _Generated with_ or similar in commit messages**
+- **NEVER ever include _Co-Authored-By_ or similar in commit messages**
