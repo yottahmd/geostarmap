@@ -1,6 +1,37 @@
 import type { GitHubUser, Repository, AppError } from '../types';
 
+interface GraphQLStargazerNode {
+  login: string;
+  id: number;
+  avatarUrl: string;
+  location: string | null;
+}
+
+interface GraphQLResponse {
+  data: {
+    repository: {
+      stargazerCount: number;
+      stargazers: {
+        pageInfo: {
+          hasNextPage: boolean;
+          endCursor: string | null;
+        };
+        nodes: GraphQLStargazerNode[];
+      };
+    };
+  };
+  errors?: Array<{ message: string }>;
+}
+
+interface StargazerAPIResponse {
+  login: string;
+  id: number;
+  avatar_url: string;
+  html_url: string;
+}
+
 const GITHUB_API_BASE = 'https://api.github.com';
+const GITHUB_GRAPHQL_API = 'https://api.github.com/graphql';
 
 export class GitHubService {
   private token?: string;
@@ -47,7 +78,123 @@ export class GitHubService {
     return null;
   }
 
+  async fetchStargazersGraphQL(
+    repo: Repository,
+    onProgress?: (fetched: number, total: number) => void,
+    signal?: AbortSignal,
+  ): Promise<GitHubUser[]> {
+    if (!this.token) {
+      // GraphQL requires authentication
+      return this.fetchStargazersREST(repo, onProgress, signal);
+    }
+
+    const query = `
+      query($owner: String!, $name: String!, $after: String) {
+        repository(owner: $owner, name: $name) {
+          stargazerCount
+          stargazers(first: 100, after: $after) {
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+            nodes {
+              login
+              id: databaseId
+              avatarUrl
+              location
+              url: url
+            }
+          }
+        }
+      }
+    `;
+
+    const users: GitHubUser[] = [];
+    let hasNextPage = true;
+    let after: string | null = null;
+    let totalCount = 0;
+
+    try {
+      while (hasNextPage && users.length < 5000) {
+        if (signal?.aborted) {
+          throw new Error('Operation cancelled');
+        }
+
+        const response = await fetch(GITHUB_GRAPHQL_API, {
+          method: 'POST',
+          headers: {
+            ...this.getHeaders(),
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query,
+            variables: { owner: repo.owner, name: repo.name, after },
+          }),
+          signal,
+        });
+
+        if (!response.ok) {
+          throw await this.handleErrorResponse(response);
+        }
+
+        const data: GraphQLResponse = await response.json();
+        
+        if (data.errors) {
+          throw new Error(data.errors[0].message);
+        }
+
+        const repository = data.data.repository;
+        totalCount = repository.stargazerCount;
+        const stargazers = repository.stargazers;
+
+        // Only add users with locations
+        const usersWithLocations = stargazers.nodes
+          .filter((user: GraphQLStargazerNode) => user.location)
+          .map((user: GraphQLStargazerNode) => ({
+            id: user.id,
+            login: user.login,
+            avatar_url: user.avatarUrl,
+            html_url: `https://github.com/${user.login}`,
+            location: user.location || undefined,
+          }));
+
+        users.push(...usersWithLocations);
+
+        if (onProgress) {
+          onProgress(users.length, Math.min(totalCount, 5000));
+        }
+
+        hasNextPage = stargazers.pageInfo.hasNextPage;
+        after = stargazers.pageInfo.endCursor;
+      }
+
+      return users;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Failed to fetch stargazers');
+    }
+  }
+
   async fetchStargazers(
+    repo: Repository,
+    onProgress?: (fetched: number, total: number) => void,
+    signal?: AbortSignal,
+  ): Promise<GitHubUser[]> {
+    // Try GraphQL first if we have a token
+    if (this.token) {
+      try {
+        return await this.fetchStargazersGraphQL(repo, onProgress, signal);
+      } catch (error) {
+        console.warn('GraphQL failed, falling back to REST API:', error);
+      }
+    }
+    
+    return this.fetchStargazersREST(repo, onProgress, signal);
+  }
+
+  async fetchStargazersREST(
     repo: Repository,
     onProgress?: (fetched: number, total: number) => void,
     signal?: AbortSignal,
@@ -98,9 +245,9 @@ export class GitHubService {
         // If we have a token, fetch full user data to get locations
         if (this.token) {
           const detailedUsers = await Promise.all(
-            stargazerData.map(async (user: any) => {
+            stargazerData.map(async (user: StargazerAPIResponse) => {
               try {
-                const userResponse = await fetch(user.url, {
+                const userResponse = await fetch(`${GITHUB_API_BASE}/users/${user.login}`, {
                   headers: this.getHeaders(),
                   signal,
                 });
