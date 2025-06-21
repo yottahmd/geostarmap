@@ -122,7 +122,7 @@ export class GitHubService {
         if (onProgress) {
           onProgress(
             users.length,
-            Math.min(totalCount, 1000),
+            Math.min(totalCount, 5000),
           );
         }
 
@@ -135,7 +135,7 @@ export class GitHubService {
         page++;
 
         // Limit total users to avoid excessive API calls
-        if (users.length >= 1000) {
+        if (users.length >= 5000) {
           break;
         }
       }
