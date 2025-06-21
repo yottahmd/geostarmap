@@ -94,7 +94,7 @@ export function MapView({ users, locations }: MapProps) {
                         href={item.user.html_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-medium text-blue-400 hover:underline">
+                        className="font-medium text-blue-400 hover:underline"
                       >
                         {item.user.login}
                       </a>
