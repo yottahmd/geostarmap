@@ -1,34 +1,214 @@
-import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
-import './App.css';
+import { useState, useCallback, useMemo } from 'react';
+import { Header } from './components/Header';
+import { RepoInput } from './components/RepoInput';
+import { ProgressBar } from './components/ProgressBar';
+import { Map } from './components/Map';
+import { GitHubService } from './services/github';
+import { GeocodingService } from './services/geocoding';
+import { CacheService } from './services/cache';
+import { GitHubUser, GeocodedLocation, ProcessingProgress } from './types';
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [users, setUsers] = useState<GitHubUser[]>([]);
+  const [locations, setLocations] = useState<
+    Map<string, GeocodedLocation | null>
+  >(new Map());
+  const [progress, setProgress] = useState<ProcessingProgress>({
+    status: 'idle',
+    current: 0,
+    total: 0,
+    message: '',
+  });
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const githubService = useMemo(() => new GitHubService(), []);
+  const geocodingService = useMemo(() => new GeocodingService(), []);
+  const cacheService = useMemo(() => new CacheService(), []);
+
+  const handleCancel = useCallback(() => {
+    geocodingService.clearQueue();
+    setIsProcessing(false);
+    setProgress({
+      status: 'idle',
+      current: 0,
+      total: 0,
+      message: '',
+    });
+  }, [geocodingService]);
+
+  const processRepository = useCallback(
+    async (url: string, token?: string) => {
+      try {
+        setIsProcessing(true);
+        setUsers([]);
+        setLocations(new Map());
+
+        // Set token if provided
+        if (token) {
+          githubService.setToken(token);
+        }
+
+        // Parse repository from URL
+        const repo = githubService.parseRepositoryUrl(url);
+        if (!repo) {
+          throw new Error('Invalid repository URL');
+        }
+
+        // Fetch stargazers
+        setProgress({
+          status: 'fetching',
+          current: 0,
+          total: 0,
+          message: 'Fetching stargazers...',
+        });
+
+        const stargazers = await githubService.fetchStargazers(
+          repo,
+          (fetched, total) => {
+            setProgress({
+              status: 'fetching',
+              current: fetched,
+              total,
+              message: `Fetching stargazers... (${fetched}/${total})`,
+            });
+          },
+        );
+
+        setUsers(stargazers);
+
+        // Extract unique locations
+        const uniqueLocations = [
+          ...new Set(
+            stargazers
+              .map((user) => user.location)
+              .filter((location): location is string => !!location),
+          ),
+        ];
+
+        if (uniqueLocations.length === 0) {
+          setProgress({
+            status: 'complete',
+            current: 0,
+            total: 0,
+            message: 'No users with location data found.',
+          });
+          setIsProcessing(false);
+          return;
+        }
+
+        // Process locations
+        setProgress({
+          status: 'geocoding',
+          current: 0,
+          total: uniqueLocations.length,
+          message: 'Geocoding locations...',
+        });
+
+        const locationMap = new Map<string, GeocodedLocation | null>();
+
+        for (let i = 0; i < uniqueLocations.length; i++) {
+          const location = uniqueLocations[i];
+
+          // Check cache first
+          let geocoded = cacheService.get(location);
+
+          if (!geocoded) {
+            // Not in cache, fetch from API
+            geocoded = await geocodingService.geocodeLocation(location);
+
+            // Cache the result (even if null)
+            if (geocoded) {
+              cacheService.set(location, geocoded);
+            }
+          }
+
+          locationMap.set(location, geocoded);
+          setLocations(new Map(locationMap));
+
+          setProgress({
+            status: 'geocoding',
+            current: i + 1,
+            total: uniqueLocations.length,
+            message: `Geocoding locations... (${i + 1}/${uniqueLocations.length})`,
+          });
+        }
+
+        setProgress({
+          status: 'complete',
+          current: uniqueLocations.length,
+          total: uniqueLocations.length,
+          message: 'Analysis complete!',
+        });
+      } catch (error) {
+        console.error('Processing error:', error);
+        setProgress({
+          status: 'error',
+          current: 0,
+          total: 0,
+          message: error instanceof Error ? error.message : 'An error occurred',
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    [githubService, geocodingService, cacheService],
+  );
+
+  const showMap = users.length > 0 && locations.size > 0;
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto space-y-6">
+          <RepoInput onSubmit={processRepository} disabled={isProcessing} />
+
+          <ProgressBar progress={progress} onCancel={handleCancel} />
+
+          {showMap && (
+            <div className="mt-8">
+              <Map users={users} locations={locations} />
+
+              {/* Show users without valid locations */}
+              {(() => {
+                const invalidLocationUsers = users.filter(
+                  (user) => user.location && !locations.get(user.location),
+                );
+
+                if (invalidLocationUsers.length > 0) {
+                  return (
+                    <div className="mt-4 p-4 bg-white rounded-lg shadow-sm border">
+                      <h3 className="text-sm font-medium text-gray-700 mb-2">
+                        Unable to geocode {invalidLocationUsers.length} user
+                        {invalidLocationUsers.length !== 1 ? 's' : ''}:
+                      </h3>
+                      <div className="text-xs text-gray-500 max-h-32 overflow-y-auto">
+                        {invalidLocationUsers.map((user, index) => (
+                          <div key={user.id}>
+                            <a
+                              href={user.html_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline"
+                            >
+                              {user.login}
+                            </a>
+                            : {user.location}
+                            {index < invalidLocationUsers.length - 1 && ', '}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
   );
 }
 
