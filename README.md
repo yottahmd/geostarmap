@@ -47,3 +47,7 @@ pnpm format
 - Tailwind CSS + shadcn/ui
 - Leaflet for maps
 - OpenStreetMap for geocoding
+
+## Data Sources
+
+- City geocoding data from [SimpleMaps World Cities Database](https://simplemaps.com/data/world-cities) (Basic version) - Licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)

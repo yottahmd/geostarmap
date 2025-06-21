@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Header } from './components/Header';
+import { Footer } from './components/Footer';
 import { RepoInput } from './components/RepoInput';
 import { ProgressBar } from './components/ProgressBar';
 import { MapView } from './components/Map';
@@ -188,10 +189,10 @@ function App() {
   const showMap = users.length > 0 && locations.size > 0;
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-gray-900 flex flex-col">
       <Header />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-2xl mx-auto space-y-6">
           <RepoInput onSubmit={processRepository} disabled={isProcessing} />
 
@@ -240,6 +241,8 @@ function App() {
           )}
         </div>
       </main>
+      
+      <Footer />
     </div>
   );
 }

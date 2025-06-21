@@ -1,5 +1,6 @@
 import type { GeocodedLocation } from '../types';
 import { RateLimiter } from '../utils/rateLimit';
+import { LocalGeocodingService } from './localGeocoding';
 
 const NOMINATIM_API_BASE = 'https://nominatim.openstreetmap.org';
 const USER_AGENT =
@@ -7,10 +8,14 @@ const USER_AGENT =
 
 export class GeocodingService {
   private rateLimiter: RateLimiter;
+  private localGeocoding: LocalGeocodingService;
 
   constructor() {
     // Nominatim requires max 1 request per second
     this.rateLimiter = new RateLimiter(1000);
+    this.localGeocoding = new LocalGeocodingService();
+    // Initialize local geocoding in the background
+    this.localGeocoding.initialize().catch(console.error);
   }
 
   async geocodeLocation(location: string): Promise<GeocodedLocation | null> {
@@ -18,6 +23,15 @@ export class GeocodingService {
       return null;
     }
 
+    // Try local geocoding first
+    const localResult = await this.localGeocoding.geocodeLocation(location);
+    if (localResult) {
+      console.log(`Found location locally: ${location}`);
+      return localResult;
+    }
+
+    // Fall back to Nominatim API
+    console.log(`Using Nominatim API for: ${location}`);
     return this.rateLimiter.execute(async () => {
       const url = new URL(`${NOMINATIM_API_BASE}/search`);
       url.searchParams.set('q', location);
