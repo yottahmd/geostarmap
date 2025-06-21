@@ -77,7 +77,7 @@ export class GitHubService {
         if (signal?.aborted) {
           throw new Error('Operation cancelled');
         }
-        
+
         const url = new URL(
           `${GITHUB_API_BASE}/repos/${repo.owner}/${repo.name}/stargazers`,
         );
@@ -94,7 +94,7 @@ export class GitHubService {
         }
 
         const stargazerData = await response.json();
-        
+
         // If we have a token, fetch full user data to get locations
         if (this.token) {
           const detailedUsers = await Promise.all(
@@ -111,7 +111,7 @@ export class GitHubService {
                 // Ignore individual user fetch errors
               }
               return user;
-            })
+            }),
           );
           users.push(...detailedUsers);
         } else {
@@ -120,7 +120,10 @@ export class GitHubService {
         }
 
         if (onProgress) {
-          onProgress(users.length, Math.min(totalCount, this.token ? totalCount : 60));
+          onProgress(
+            users.length,
+            Math.min(totalCount, this.token ? totalCount : 60),
+          );
         }
 
         // Check if there are more pages
@@ -130,7 +133,7 @@ export class GitHubService {
         }
 
         page++;
-        
+
         // Limit total users to avoid excessive API calls
         if (users.length >= 300) {
           break;

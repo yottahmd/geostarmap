@@ -1,6 +1,6 @@
 # GeoStarMap - GitHub Stars Geography Visualizer
 
-A minimalist web application that visualizes the geographic distribution of GitHub repository stargazers on an interactive world map.
+A web application that visualizes the geographic distribution of GitHub repository stargazers on an interactive world map.
 
 ## Features
 

@@ -21,7 +21,8 @@ function App() {
     message: '',
   });
   const [isProcessing, setIsProcessing] = useState(false);
-  const [abortController, setAbortController] = useState<AbortController | null>(null);
+  const [abortController, setAbortController] =
+    useState<AbortController | null>(null);
 
   const githubService = useMemo(() => new GitHubService(), []);
   const geocodingService = useMemo(() => new GeocodingService(), []);
@@ -33,10 +34,10 @@ function App() {
       abortController.abort();
       setAbortController(null);
     }
-    
+
     // Clear geocoding queue
     geocodingService.clearQueue();
-    
+
     // Reset state
     setIsProcessing(false);
     setProgress({
@@ -52,7 +53,7 @@ function App() {
       // Create new AbortController for this operation
       const controller = new AbortController();
       setAbortController(controller);
-      
+
       try {
         setIsProcessing(true);
         setUsers([]);
@@ -106,7 +107,8 @@ function App() {
             status: 'error',
             current: 0,
             total: 0,
-            message: 'No users with location data found. Please add a GitHub API token to fetch location data.',
+            message:
+              'No users with location data found. Please add a GitHub API token to fetch location data.',
           });
           setIsProcessing(false);
           return;
@@ -127,7 +129,7 @@ function App() {
           if (controller.signal.aborted) {
             throw new Error('Operation cancelled');
           }
-          
+
           const location = uniqueLocations[i];
 
           // Check cache first
@@ -162,13 +164,13 @@ function App() {
         });
       } catch (error) {
         console.error('Processing error:', error);
-        
+
         // Check if it was cancelled
         if (error instanceof Error && error.message === 'Operation cancelled') {
           // Already handled in handleCancel
           return;
         }
-        
+
         setProgress({
           status: 'error',
           current: 0,

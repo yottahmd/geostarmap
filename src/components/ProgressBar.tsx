@@ -22,8 +22,7 @@ export function ProgressBar({ progress, onCancel }: ProgressBarProps) {
         <p className="text-sm font-medium text-gray-300">{progress.message}</p>
         {onCancel &&
           progress.status !== 'complete' &&
-          progress.status !== 'error' &&
-          progress.status !== 'idle' && (
+          progress.status !== 'error' && (
             <button
               onClick={onCancel}
               className="text-gray-400 hover:text-gray-200 transition-colors p-1 rounded hover:bg-gray-700"
