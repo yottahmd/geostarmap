@@ -12,6 +12,7 @@ A web application that visualizes the geographic distribution of GitHub reposito
 - Progress tracking while processing users
 - Cached geocoding results for performance
 - Fully responsive design
+- Processes up to 5,000 stargazers per repository
 
 ## Development
 
