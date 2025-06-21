@@ -60,12 +60,14 @@ export class LocalGeocodingService {
           id: values[10].replace(/"/g, ''),
         };
 
-        // Index by various formats
+        // Index by various formats (all lowercase for case-insensitive search)
         this.addToIndex(cityData.city.toLowerCase(), cityData);
         this.addToIndex(cityData.city_ascii.toLowerCase(), cityData);
         this.addToIndex(`${cityData.city}, ${cityData.country}`.toLowerCase(), cityData);
         this.addToIndex(`${cityData.city}, ${cityData.iso2}`.toLowerCase(), cityData);
         this.addToIndex(`${cityData.city}, ${cityData.admin_name}`.toLowerCase(), cityData);
+        this.addToIndex(`${cityData.city_ascii}, ${cityData.country}`.toLowerCase(), cityData);
+        this.addToIndex(`${cityData.city_ascii}, ${cityData.iso2}`.toLowerCase(), cityData);
         
         // Also index common variations
         if (cityData.iso2 === 'US') {
@@ -73,7 +75,15 @@ export class LocalGeocodingService {
           const stateAbbr = this.getUSStateAbbreviation(cityData.admin_name);
           if (stateAbbr) {
             this.addToIndex(`${cityData.city}, ${stateAbbr}`.toLowerCase(), cityData);
+            this.addToIndex(`${cityData.city_ascii}, ${stateAbbr}`.toLowerCase(), cityData);
           }
+        }
+        
+        // Index country variations
+        const countryVariations = this.getCountryVariations(cityData.country);
+        for (const countryVariation of countryVariations) {
+          this.addToIndex(`${cityData.city}, ${countryVariation}`.toLowerCase(), cityData);
+          this.addToIndex(`${cityData.city_ascii}, ${countryVariation}`.toLowerCase(), cityData);
         }
       }
 
@@ -133,16 +143,92 @@ export class LocalGeocodingService {
     return stateAbbreviations[stateName] || null;
   }
 
+  private getCountryVariations(country: string): string[] {
+    const variations: Record<string, string[]> = {
+      'United States': ['USA', 'US', 'United States of America', 'America'],
+      'United Kingdom': ['UK', 'GB', 'Great Britain', 'Britain', 'England'],
+      'Russia': ['Russian Federation'],
+      'South Korea': ['Korea', 'Republic of Korea'],
+      'North Korea': ['Democratic People\'s Republic of Korea'],
+      'Netherlands': ['Holland', 'The Netherlands'],
+      'Czech Republic': ['Czechia'],
+      'United Arab Emirates': ['UAE'],
+      'France': ['FR'],
+      'Germany': ['DE', 'Deutschland'],
+      'Spain': ['ES', 'España'],
+      'Italy': ['IT', 'Italia'],
+      'China': ['CN', 'PRC', 'People\'s Republic of China'],
+      'Japan': ['JP'],
+      'Brazil': ['BR', 'Brasil'],
+      'Canada': ['CA'],
+      'Australia': ['AU'],
+      'India': ['IN'],
+      'Mexico': ['MX', 'México'],
+      // Add more as needed
+    };
+
+    return variations[country] || [];
+  }
+
   async geocodeLocation(location: string): Promise<GeocodedLocation | null> {
     if (!this.initialized) {
       await this.initialize();
     }
 
     const searchKey = location.toLowerCase().trim();
-    const cities = this.cityDatabase.get(searchKey);
+    
+    // Direct lookup
+    let cities = this.cityDatabase.get(searchKey);
 
     if (cities && cities.length > 0) {
       // If multiple matches, prefer the one with highest population
+      const bestMatch = cities.reduce((prev, current) => 
+        (current.population > prev.population) ? current : prev
+      );
+
+      return {
+        lat: bestMatch.lat,
+        lng: bestMatch.lng,
+        displayName: `${bestMatch.city}, ${bestMatch.country}`,
+        timestamp: Date.now(),
+      };
+    }
+
+    // If location contains comma, try different combinations
+    if (location.includes(',')) {
+      const originalParts = location.split(',').map(p => p.trim());
+      
+      // Try the exact format first
+      cities = this.cityDatabase.get(searchKey);
+      
+      if (!cities || cities.length === 0) {
+        // Try reversing parts (e.g., "France, La Rochelle" -> "La Rochelle, France")
+        const reversedParts = [...originalParts].reverse();
+        const reversed = reversedParts.join(', ').toLowerCase();
+        cities = this.cityDatabase.get(reversed);
+      }
+      
+      if (!cities || cities.length === 0) {
+        // Try just the first part (city name)
+        cities = this.cityDatabase.get(originalParts[0].toLowerCase());
+        
+        // Filter by country/state if provided
+        if (cities && cities.length > 0 && originalParts.length > 1) {
+          const locationPart = originalParts[1].toLowerCase();
+          const filtered = cities.filter(city => 
+            city.country.toLowerCase() === locationPart ||
+            city.iso2.toLowerCase() === locationPart ||
+            city.admin_name.toLowerCase() === locationPart ||
+            this.getCountryVariations(city.country).some(v => v.toLowerCase() === locationPart)
+          );
+          if (filtered.length > 0) {
+            cities = filtered;
+          }
+        }
+      }
+    }
+
+    if (cities && cities.length > 0) {
       const bestMatch = cities.reduce((prev, current) => 
         (current.population > prev.population) ? current : prev
       );

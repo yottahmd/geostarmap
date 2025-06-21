@@ -26,12 +26,10 @@ export class GeocodingService {
     // Try local geocoding first
     const localResult = await this.localGeocoding.geocodeLocation(location);
     if (localResult) {
-      console.log(`Found location locally: ${location}`);
       return localResult;
     }
 
     // Fall back to Nominatim API
-    console.log(`Using Nominatim API for: ${location}`);
     return this.rateLimiter.execute(async () => {
       const url = new URL(`${NOMINATIM_API_BASE}/search`);
       url.searchParams.set('q', location);
