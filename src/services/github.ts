@@ -98,7 +98,7 @@ export class GitHubService {
         // If we have a token, fetch full user data to get locations
         if (this.token) {
           const detailedUsers = await Promise.all(
-            stargazerData.slice(0, 30).map(async (user: any) => {
+            stargazerData.map(async (user: any) => {
               try {
                 const userResponse = await fetch(user.url, {
                   headers: this.getHeaders(),
@@ -122,7 +122,7 @@ export class GitHubService {
         if (onProgress) {
           onProgress(
             users.length,
-            Math.min(totalCount, this.token ? totalCount : 60),
+            Math.min(totalCount, 3000),
           );
         }
 
@@ -135,7 +135,7 @@ export class GitHubService {
         page++;
 
         // Limit total users to avoid excessive API calls
-        if (users.length >= 300) {
+        if (users.length >= 3000) {
           break;
         }
       }
