@@ -4,7 +4,7 @@ export function Header() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center gap-2">
           <svg
-            className="h-6 w-6 text-blue-600 flex-shrink-0"
+            className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 flex-shrink-0"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
