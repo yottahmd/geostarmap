@@ -158,7 +158,7 @@ function App() {
   const showMap = users.length > 0 && locations.size > 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-900">
       <Header />
 
       <main className="container mx-auto px-4 py-8">
@@ -180,19 +180,19 @@ function App() {
 
                 if (invalidLocationUsers.length > 0) {
                   return (
-                    <div className="mt-4 p-4 bg-white rounded-lg shadow-sm border">
-                      <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    <div className="mt-4 p-4 bg-gray-800 rounded-lg shadow-sm border border-gray-700">
+                      <h3 className="text-sm font-medium text-gray-300 mb-2">
                         Unable to geocode {invalidLocationUsers.length} user
                         {invalidLocationUsers.length !== 1 ? 's' : ''}:
                       </h3>
-                      <div className="text-xs text-gray-500 max-h-32 overflow-y-auto">
+                      <div className="text-xs text-gray-400 max-h-32 overflow-y-auto">
                         {invalidLocationUsers.map((user, index) => (
                           <div key={user.id}>
                             <a
                               href={user.html_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline"
+                              className="text-blue-400 hover:underline"
                             >
                               {user.login}
                             </a>

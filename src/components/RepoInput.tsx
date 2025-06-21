@@ -38,12 +38,12 @@ export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6">
+    <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label
             htmlFor="repo-url"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-gray-300 mb-1"
           >
             GitHub Repository URL
           </label>
@@ -54,8 +54,8 @@ export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
             onChange={(e) => handleUrlChange(e.target.value)}
             placeholder="https://github.com/owner/repository"
             className={cn(
-              'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
-              error ? 'border-red-300' : 'border-gray-300',
+              'w-full px-3 py-2 border rounded-md bg-gray-900 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500',
+              error ? 'border-red-300' : 'border-gray-700',
             )}
             disabled={disabled}
             required
@@ -72,7 +72,7 @@ export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+            className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
             aria-expanded={showAdvanced}
             aria-controls="advanced-options"
           >
@@ -87,11 +87,11 @@ export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
           {showAdvanced && (
             <div
               id="advanced-options"
-              className="mt-3 p-4 bg-gray-50 rounded-md"
+              className="mt-3 p-4 bg-gray-900 rounded-md"
             >
               <label
                 htmlFor="api-token"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-300 mb-1"
               >
                 GitHub API Token (Optional)
               </label>
@@ -101,10 +101,10 @@ export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-700 rounded-md bg-gray-800 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={disabled}
               />
-              <p className="mt-2 text-xs text-gray-500">
+              <p className="mt-2 text-xs text-gray-400">
                 Adding a token increases rate limits from 60 to 5,000 requests
                 per hour. Your token is not stored.
               </p>
@@ -118,8 +118,8 @@ export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
           className={cn(
             'w-full py-2 px-4 rounded-md font-medium transition-colors',
             disabled || !url
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700',
+              ? 'bg-gray-800 text-gray-400 cursor-not-allowed'
+              : 'bg-blue-500 text-white hover:bg-blue-600',
           )}
         >
           {disabled ? 'Processing...' : 'Analyze Repository'}

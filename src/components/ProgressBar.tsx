@@ -17,15 +17,15 @@ export function ProgressBar({ progress, onCancel }: ProgressBarProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-4">
+    <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 p-4">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-sm font-medium text-gray-700">{progress.message}</p>
+        <p className="text-sm font-medium text-gray-300">{progress.message}</p>
         {onCancel &&
           progress.status !== 'complete' &&
           progress.status !== 'error' && (
             <button
               onClick={onCancel}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-300"
               aria-label="Cancel"
             >
               <X className="h-4 w-4" />
@@ -35,13 +35,13 @@ export function ProgressBar({ progress, onCancel }: ProgressBarProps) {
 
       {progress.status !== 'error' && (
         <>
-          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
             <div
-              className="bg-blue-600 h-2 transition-all duration-300 ease-out"
+              className="bg-blue-500 h-2 transition-all duration-300 ease-out"
               style={{ width: `${percentage}%` }}
             />
           </div>
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-gray-400">
             {progress.current} / {progress.total} ({percentage}%)
           </p>
         </>

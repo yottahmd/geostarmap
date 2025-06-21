@@ -63,7 +63,7 @@ export function MapView({ users, locations }: MapProps) {
     );
 
   return (
-    <div className="w-full h-[400px] sm:h-[500px] md:h-[600px] rounded-lg overflow-hidden shadow-sm border">
+    <div className="w-full h-[400px] sm:h-[500px] md:h-[600px] rounded-lg overflow-hidden shadow-sm border border-gray-700">
       <MapContainer
         center={[20, 0]}
         zoom={2}
@@ -94,13 +94,13 @@ export function MapView({ users, locations }: MapProps) {
                         href={item.user.html_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-medium text-blue-600 hover:underline"
+                        className="font-medium text-blue-400 hover:underline">
                       >
                         {item.user.login}
                       </a>
                     </div>
                   </div>
-                  <p className="text-gray-600 text-xs">{item.user.location}</p>
+                  <p className="text-gray-400 text-xs">{item.user.location}</p>
                 </div>
               </Popup>
             </Marker>
